@@ -1,25 +1,22 @@
 
 import Card from "@/components/Card";
-import Image from "next/image";
 
-type PokemonEntries = {
-  entry_number: number,
-  pokemon_species: PokemonSpecies
-}
+import { Pokedex, PokemonEntries} from '@/interface/pokemonType'
 
-type PokemonSpecies = {
-  name: string,
-  url : string
+async function getPokedex(): Promise<Pokedex> {
+  const res = await fetch(process.env.API_URL + 'pokedex/2')
+  if (!res) {
+    throw new Error('Failed to fetch getPokedex');
+  }
+  return res.json()
 }
 
 export default async function Home() {
-  const pokedexData = getPokedex()
+  const pokedexData = await getPokedex()
   
-  const [pokedex] = await Promise.all([pokedexData])
   return (
     <main className="flex flex-wrap min-h-screen items-center justify-between p-24">
-      {pokedex.pokemon_entries.map((item: PokemonEntries, index: number) => {
-        
+      {pokedexData.pokemon_entries.map((item: PokemonEntries, index: number) => {
         return (<div key={index}>
           <Card item={item.pokemon_species}/>
           </div>)
@@ -29,9 +26,3 @@ export default async function Home() {
   );
 }
 
-
-async function getPokedex() {
-  const res = await fetch(process.env.API_URL + 'pokedex/2')
-  console.log('res', res)
-  return res.json()
-}

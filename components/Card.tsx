@@ -1,21 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Pokemon, PokemonSpecies, PokemonType} from '@/interface/pokemonType'
 
-
-type PokemonSpecies = {
-  name: string,
-  url : string
-}
-
-type PokemonType = {
-  type: {
-    name: string,
-    url: string
+async function getPokemon(name: string): Promise<Pokemon> {
+  const res = await fetch(`${process.env.API_URL}pokemon/${name}`)
+  if (!res) {
+    throw new Error('Failed to fetch getPokedex');
   }
-}
-
-async function getPokemon(payload: string) {
-  const res = await fetch(`${process.env.API_URL}pokemon/${payload}`)
   return res.json()
 }
 
@@ -48,30 +39,24 @@ function getBackgroundType(payload: string) {
 }
 
 
-
-
-
 export default async function Card( props: {
   item: PokemonSpecies}) {
 
-  const pokedexData = getPokemon(props.item.name)
-  
-  const [pokemon] = await Promise.all([pokedexData])
-
+  const pokedexData = await getPokemon(props.item.name)
 
   return (
-    <Link href={`pokemon/${props.item.name}`} className="cursor-pointer flex flex-col justify-center items-center" > 
+    <Link href={`pokemon/${pokedexData.id}`} className="cursor-pointer flex flex-col justify-center items-center" > 
       <Image
-        src={pokemon.sprites.back_default}
+        src={pokedexData.sprites.back_default}
         alt={props.item.name}
-        className="dark:invert"
         width={100}
         height={24}
         priority
+        style={{width:'auto', height: "auto" }}
       />
       {props.item.name}
       <div className="flex flex-wrap">
-        {pokemon.types.map((item: PokemonType, index: number) =>{
+        {pokedexData.types.map((item: PokemonType, index: number) =>{
           return <div key={index} className={`text-xs text-center p-1 rounded m-1 ${getBackgroundType(item.type.name)}`}>
             {item.type.name}
           </div>
