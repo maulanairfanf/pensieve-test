@@ -1,10 +1,17 @@
-import DetailsPokemon from "@/components/DetailsPokemon"
+import Header from "@/components/Header";
+import EmptyData from "@/components/EmptyData";
+
 import { Pokemon } from "@/interface/pokemonType"
+
 import Link from "next/link";
+import dynamic from 'next/dynamic'
+
+const DetailsPokemon = dynamic(() => import('@/components/DetailsPokemon'))
+
 
 
 async function getPokemon(id: string): Promise<Pokemon> {
-  const res = await fetch(process.env.API_URL + 'pokemon/' + id)
+  const res = await fetch(process.env.NEXT_PUBLIC_API_URL + 'pokemon/' + id)
   if (!res) {
     throw new Error('Failed to fetch getPokemon');
   }
@@ -25,13 +32,11 @@ export default async function Home({
     console.log('error', error)
   }
 
-  if (!pokemonData) return <div className="flex h-screen items-center justify-center flex-col">
-    <div className="text-4xl">Data Not Found</div>
-    <Link href="/" className="button-primary mt-6">Back To Home</Link>
-  </div>
+  if (!pokemonData) return <EmptyData />
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <Header />
       <DetailsPokemon item={pokemonData} />
       <div className="flex flex-wrap justify-center items-center">
         <Link type="button" className="button-primary mx-2" href={'/pokemon/' + (parseInt(id)-1)} >

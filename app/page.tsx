@@ -1,24 +1,84 @@
+"use client";
 
-import Card from "@/components/Card";
+import Filter from "@/components/Filter";
+import Search from "@/components/Search";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-import { Pokedex, PokemonEntries} from '@/interface/pokemonType'
+import { Pokemon, PokemonEntries} from '@/interface/pokemonType'
 
-async function getPokedex(): Promise<Pokedex> {
-  const res = await fetch(process.env.API_URL + 'pokedex/2')
-  if (!res) {
-    throw new Error('Failed to fetch getPokedex');
+import { useEffect, useState } from "react";
+
+import dynamic from 'next/dynamic'
+
+const Card = dynamic(() => import('@/components/Card'))
+
+
+export default function Home() {
+  
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [isLoading, setIsLoading] = useState(true)
+  const [filter, setFilter] = useState('')
+
+
+  function handleFilter (payload: string) {
+    setIsLoading(true)
+    setFilter(payload)
   }
-  return res.json()
-}
+  
+  useEffect(() => {
+    setIsLoading(true)
+    setPokemonList([]);
+    const getPokedex =  async (endpoint: string, value: string) => {
+      try {
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL + endpoint + '/' + value)
+        if (response) {
+          const jsonData = await response.json();
+          let data
+          if (endpoint === "pokedex") {
+            data = jsonData.pokemon_entries
+          } else {
+            data = jsonData.pokemon
+          }
 
-export default async function Home() {
-  const pokedexData = await getPokedex()
+          const detailPromises = data.map(async (pokemon: PokemonEntries) => {
+            let detailResponse
+            if (endpoint === 'pokedex') {
+              detailResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}pokemon/${pokemon.pokemon_species.name}`);
+            } else {
+              detailResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}pokemon/${pokemon.pokemon.name}`);
+            }
+            const detailData = await detailResponse.json();
+            return { ...detailData };
+          });
+
+          const pokemonWithDetails = await Promise.all(detailPromises);
+          console.log(pokemonWithDetails, 'pokemonWithDetails')
+          setPokemonList(pokemonWithDetails);
+        }
+      } catch (error) {
+        console.log('error', error)
+        
+      }
+      setIsLoading(false)
+    }
+
+    if (filter === '') getPokedex('pokedex', '2')
+    else getPokedex('type', filter)
+    
+  },[filter]);
+
+  if (isLoading) return <LoadingSpinner /> 
+  
   
   return (
     <main className="flex flex-wrap min-h-screen items-center justify-between p-24">
-      {pokedexData.pokemon_entries.map((item: PokemonEntries, index: number) => {
+      <div className="grid grid-cols-2 gap-4 w-full">
+        <Search/>
+        <Filter handleFilter={handleFilter} filter={filter}  />
+      </div>
+      {pokemonList.map((item: Pokemon, index: number) => {
         return (<div key={index}>
-          <Card item={item.pokemon_species}/>
+          <Card item={item}/>
           </div>)
       })}
 
