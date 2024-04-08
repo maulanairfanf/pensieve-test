@@ -14,6 +14,12 @@ export type Pokedex = {
 export type PokemonEntries = {
   entry_number: number,
   pokemon_species: PokemonSpecies
+  pokemon: PokemonSpecies
+}
+
+export type PokemonTypeList = {
+  slot?: number,
+  pokemon?: PokemonSpecies
 }
 
 export type PokemonSpecies = {
@@ -22,10 +28,12 @@ export type PokemonSpecies = {
 }
 
 export type PokemonType = {
-  type: {
-    name: string,
-    url: string
-  }
+  type: PokemontTypeDetail
+}
+
+export type PokemontTypeDetail = {
+  name: string,
+  url: string
 }
 
 export type PokemonSprites = {
@@ -43,3 +51,5 @@ export type PokemonSpritesOther = {
 export type PokemonSpritesOtherDreamWorld = {
   front_default: string,
 }
+
+
