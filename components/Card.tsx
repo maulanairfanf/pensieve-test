@@ -1,14 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { Pokemon, PokemonSpecies, PokemonType} from '@/interface/pokemonType'
-
-async function getPokemon(name: string): Promise<Pokemon> {
-  const res = await fetch(`${process.env.API_URL}pokemon/${name}`)
-  if (!res) {
-    throw new Error('Failed to fetch getPokedex');
-  }
-  return res.json()
-}
+import { Pokemon, PokemonType} from '@/interface/pokemonType'
 
 
 // TODO: need more sync with API to get type of pokemon
@@ -39,24 +33,25 @@ function getBackgroundType(payload: string) {
 }
 
 
-export default async function Card( props: {
-  item: PokemonSpecies}) {
-
-  const pokedexData = await getPokemon(props.item.name)
+export default function Card( props: {
+  item: Pokemon}) {
 
   return (
-    <Link href={`pokemon/${pokedexData.id}`} className="cursor-pointer flex flex-col justify-center items-center" > 
+    <Link href={`pokemon/${props.item.id}`} className="cursor-pointer flex flex-col justify-center items-center" > 
+    {props.item.sprites.back_default ? 
       <Image
-        src={pokedexData.sprites.back_default}
+        src={props.item.sprites.back_default}
         alt={props.item.name}
         width={100}
         height={24}
         priority
         style={{width:'auto', height: "auto" }}
       />
+       : null
+    }
       {props.item.name}
       <div className="flex flex-wrap">
-        {pokedexData.types.map((item: PokemonType, index: number) =>{
+        {props.item.types.map((item: PokemonType, index: number) =>{
           return <div key={index} className={`text-xs text-center p-1 rounded m-1 ${getBackgroundType(item.type.name)}`}>
             {item.type.name}
           </div>
